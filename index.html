@@ -3,230 +3,236 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Learn Morse Code with this red & black themed trainer. Practice letters, numbers, words, and sentences with scoring and a cheat sheet.">
 <title>Morse Code Trainer</title>
 <style>
-  /* === GLOBAL STYLES === */
-  body {
-    margin: 0;
-    background: #000;
-    color: #ff2a2a;
-    font-family: Courier, monospace;
-    text-align: center;
-  }
-
-  h1 {
-    text-shadow: 0 0 10px #ff2a2a55;
-    margin-top: 20px;
-  }
-
-  button {
-    background: #0a0a0a;
-    color: #ff2a2a;
-    border: 1px solid #ff2a2a;
-    padding: 8px 14px;
-    margin: 4px;
-    cursor: pointer;
-    font-family: inherit;
-  }
-
-  button:hover {
-    background: #ff2a2a;
-    color: black;
-  }
-
-  input {
-    width: 80%;
-    padding: 10px;
-    font-size: 18px;
-    background: #0a0a0a;
-    color: #ff2a2a;
-    border: 1px solid #ff2a2a;
-    text-align: center;
-    font-family: inherit;
-    margin: 10px 0;
-  }
-
-  .row { margin: 6px 0; }
-  #result { margin-top: 10px; white-space: pre-line; }
-  #score { margin-top: 5px; }
-
-  #prompt { font-size: 32px; margin: 20px; }
-
-  #sheet {
-    display: none;
-    position: fixed;
-    right: 10px;
-    top: 10px;
-    bottom: 10px;
-    width: 260px;
-    overflow-y: auto;
-    background: #050505;
-    border: 1px solid #ff2a2a;
-    padding: 10px;
-    text-align: left;
-  }
-
-  /* === MODAL SPLASH === */
-  #introModal {
-    position: fixed;
-    top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.95);
-    color: #ff2a2a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    padding: 20px;
-    z-index: 1000;
-    text-align: center;
-  }
-
-  #introModal p {
-    max-width: 600px;
-    line-height: 1.5;
-    margin-bottom: 20px;
-  }
-
-  @media(max-width:600px) {
-    #prompt { font-size: 24px; }
-    input { width: 90%; }
-  }
+  body { margin:0; background:#000; color:#ff2a2a; font-family:Courier, monospace; text-align:center; }
+  h1 { text-shadow:0 0 10px #ff2a2a55; margin-top:20px; }
+  button { background:#0a0a0a; color:#ff2a2a; border:1px solid #ff2a2a; padding:8px 14px; margin:4px; cursor:pointer; font-family:inherit; }
+  button:hover { background:#ff2a2a; color:black; }
+  input { width:80%; padding:10px; font-size:18px; background:#0a0a0a; color:#ff2a2a; border:1px solid #ff2a2a; text-align:center; font-family:inherit; margin:10px 0; }
+  .row { margin:6px 0; }
+  #result { margin-top:10px; white-space: pre-line; }
+  #score { margin-top:5px; }
+  #prompt { font-size:32px; margin:20px; }
+  #sheet { display:none; position:fixed; right:10px; top:10px; bottom:10px; width:260px; overflow-y:auto; background:#050505; border:1px solid #ff2a2a; padding:10px; text-align:left; }
+  #introModal { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.95); color:#ff2a2a; display:flex; align-items:center; justify-content:center; flex-direction:column; padding:20px; z-index:1000; text-align:center; }
+  #introModal p { max-width:600px; line-height:1.5; margin-bottom:20px; }
+  #levelSelect { display:none; margin-top:20px; }
+  #progressBar { height:20px; background:#222; margin:10px auto; width:80%; border:1px solid #ff2a2a; position:relative; }
+  #progressFill { height:100%; width:0%; background:#ff2a2a; }
+  #timer { margin-top:5px; }
+  @media(max-width:600px){ #prompt { font-size:24px; } input{width:90%;} }
 </style>
 </head>
 <body>
 
 <h1>Morse Code Trainer</h1>
 
-<!-- INTRO MODAL -->
+<!-- INTRO -->
 <div id="introModal">
-  <p>
-    Hey! This was made mainly for my friends and other people I talk to. If you're new, that's totally fine!  
-    You can still use this to practice Morse Code. Press continue to start practicing.
-  </p>
-  <button onclick="startTrainer()">Continue</button>
+  <p>YOO! New update, this update is a scor- just play the thing lol. So a thing I wanted to mention was that you have to progress through the levels or else it just wouldn't let you click on the next level.</p>
+  <button onclick="startLevelSelect()">Continue</button>
+</div>
+
+<!-- LEVEL SELECT -->
+<div id="levelSelect">
+  <div>
+    <label>Difficulty:</label>
+    <button onclick="setDifficulty('EASY')">Easy</button>
+    <button onclick="setDifficulty('MEDIUM')">Medium</button>
+    <button onclick="setDifficulty('HARD')">Hard</button>
+  </div>
+  <div id="levelsContainer" style="margin-top:15px;"></div>
 </div>
 
 <!-- TRAINER -->
 <div id="trainer" style="display:none;">
   <div id="prompt">---</div>
   <input id="entry" placeholder="type morse here">
-
   <div class="row">
     <button onclick="check()">Check</button>
     <button onclick="toggleSheet()">Cheat Sheet</button>
   </div>
-
-  <div class="row">
-    <button onclick="setMode('LETTERS')">LETTERS</button>
-    <button onclick="setMode('NUMBERS')">NUMBERS</button>
-    <button onclick="setMode('WORDS')">WORDS</button>
-    <button onclick="setMode('SENTENCES')">SENTENCES</button>
-  </div>
-
-  <div class="row">
-    <button onclick="setDifficulty('EASY')">EASY</button>
-    <button onclick="setDifficulty('MEDIUM')">MEDIUM</button>
-    <button onclick="setDifficulty('HARD')">HARD</button>
-  </div>
-
   <div id="result"></div>
-  <div id="score">Score: 0/0</div>
+  <div id="score">Score: 0</div>
+  <div id="progressBar"><div id="progressFill"></div></div>
+  <div id="timer">Time: 0s</div>
 </div>
 
 <div id="sheet"></div>
 
 <script>
-// === MORSE DATA ===
-const MORSE = {
-  A: ".-", B: "-...", C: "-.-.", D: "-..",
-  E: ".", F: "..-.", G: "--.", H: "....",
-  I: "..", J: ".---", K: "-.-", L: ".-..",
-  M: "--", N: "-.", O: "---", P: ".--.",
-  Q: "--.-", R: ".-.", S: "...", T: "-",
-  U: "..-", V: "...-", W: ".--", X: "-..-",
-  Y: "-.--", Z: "--..",
-  0: "-----", 1: ".----", 2: "..---", 3: "...--",
-  4: "....-", 5: ".....", 6: "-....", 7: "--...",
-  8: "---..", 9: "----."
-};
+// MORSE DATA
+const MORSE = {A:".-",B:"-...",C:"-.-.",D:"-..",E:".",F:"..-.",G:"--.",H:"....",
+I:"..",J:".---",K:"-.-",L:".-..",M:"--",N:"-.",O:"---",P:".--.",
+Q:"--.-",R:".-.",S:"...",T:"-",U:"..-",V:"...-",W:".--",X:"-..-",
+Y:"-.--",Z:"--..",0:"-----",1:".----",2:"..---",3:"...--",4:"....-",
+5:".....",6:"-....",7:"--...",8:"---..",9:"----."};
 
-const EASY_WORDS = ["HI", "CAT", "DOG", "BEEP", "CODE"];
-const MEDIUM_WORDS = ["HELLO", "RADIO", "PYTHON", "MORSE"];
-const HARD_WORDS = ["TRANSMISSION", "FREQUENCY", "ENCRYPTION"];
-const EASY_SENTENCES = ["HI THERE", "SEND CODE"];
-const MEDIUM_SENTENCES = ["LEARN MORSE CODE", "RADIO SIGNAL ACTIVE"];
-const HARD_SENTENCES = [
-  "KEEP PRACTICING MORSE CODE DAILY",
-  "LONG TRANSMISSIONS REQUIRE SKILL"
-];
+// LEVEL WORDS
+const EASY_WORDS=["HI","CAT","DOG","BEEP","CODE"];
+const MEDIUM_WORDS=["HELLO","RADIO","PYTHON","MORSE"];
+const HARD_WORDS=["TRANSMISSION","FREQUENCY","ENCRYPTION"];
 
-// === STATE ===
-let mode = "LETTERS";
-let difficulty = "EASY";
-let current = "";
-let score = 0;
-let rounds = 0;
+// STATE
+let difficulty="EASY";
+let levelIndex=0;
+let levels=[];
+let current="";
+let score=0;
+let totalQuestions=10;
+let answered=0;
+let elapsed=0;
+let timerInterval;
 
-// === HELPERS ===
-function random(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+// RANDOM HELPER
+function random(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
-// === START TRAINER ===
-function startTrainer(){
+// START
+function startLevelSelect(){
   document.getElementById("introModal").style.display="none";
-  document.getElementById("trainer").style.display="block";
-  newQuestion();
-  document.getElementById("entry").focus();
+  document.getElementById("levelSelect").style.display="block";
+  buildLevels();
 }
 
-// === NEW QUESTION ===
-function newQuestion() {
-  if(mode==="LETTERS"){
-    const pool=difficulty==="EASY"?"ABCDE":difficulty==="MEDIUM"?"ABCDEFGHIJKLMNO":"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    current=random(pool.split(""));
-  } else if(mode==="NUMBERS"){
-    const pool=difficulty==="EASY"?"01234":"0123456789";
-    current=random(pool.split(""));
-  } else if(mode==="WORDS"){
-    current=random(difficulty==="EASY"?EASY_WORDS:difficulty==="MEDIUM"?MEDIUM_WORDS:HARD_WORDS);
-  } else if(mode==="SENTENCES"){
-    current=random(difficulty==="EASY"?EASY_SENTENCES:difficulty==="MEDIUM"?MEDIUM_SENTENCES:HARD_SENTENCES);
+// DIFFICULTY
+function setDifficulty(d){
+  difficulty=d;
+  buildLevels();
+}
+
+// BUILD LEVEL BUTTONS
+function buildLevels(){
+  const container=document.getElementById("levelsContainer");
+  container.innerHTML="";
+  levels=getLevels(difficulty);
+  levels.forEach((lvl,i)=>{
+    const btn=document.createElement("button");
+    btn.textContent=lvl.name;
+    btn.disabled=!lvl.unlocked;
+    btn.onclick=()=>startLevel(i);
+    container.appendChild(btn);
+  });
+}
+
+// LEVEL DATA
+function getLevels(diff){
+  const easyUnlocks=[true,true,true,true,true]; // first level unlocked
+  const medUnlocks=[true,true,true,true,true];
+  const hardUnlocks=[true,true,true,true,true];
+  let lvls=[];
+  if(diff==="EASY") lvls=[
+    {name:"Letters A-E", pool:"ABCDE", unlocked:true},
+    {name:"Numbers 1-5", pool:"12345", unlocked:false},
+    {name:"Words A-E", pool:EASY_WORDS, unlocked:false},
+    {name:"Words+Numbers", pool:"ABCDE1234", unlocked:false},
+    {name:"Big Numbers", pool:"1234", unlocked:false}
+  ];
+  else if(diff==="MEDIUM") lvls=[
+    {name:"Letters A-O", pool:"ABCDEFGHIJKLMNO", unlocked:true},
+    {name:"Numbers 1-7", pool:"1234567", unlocked:false},
+    {name:"Words A-O", pool:MEDIUM_WORDS, unlocked:false},
+    {name:"Words+Numbers", pool:"ABCDEFGHIJKLMNO1234567", unlocked:false},
+    {name:"Big Numbers", pool:"1234567", unlocked:false}
+  ];
+  else lvls=[
+    {name:"Letters A-Z", pool:"ABCDEFGHIJKLMNOPQRSTUVWXYZ", unlocked:true},
+    {name:"Numbers 0-9", pool:"0123456789", unlocked:false},
+    {name:"Words", pool:HARD_WORDS, unlocked:false},
+    {name:"Words+Numbers", pool:"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", unlocked:false},
+    {name:"Big Numbers", pool:"0123456789", unlocked:false}
+  ];
+  return lvls;
+}
+
+// START LEVEL
+function startLevel(idx){
+  levelIndex=idx;
+  document.getElementById("levelSelect").style.display="none";
+  document.getElementById("trainer").style.display="block";
+  score=0; answered=0; elapsed=0;
+  updateScore();
+  newQuestion();
+  startTimer();
+}
+
+// TIMER
+function startTimer(){
+  clearInterval(timerInterval);
+  elapsed=0;
+  document.getElementById("timer").textContent="Time: 0s";
+  timerInterval=setInterval(()=>{
+    elapsed++;
+    document.getElementById("timer").textContent=`Time: ${elapsed}s`;
+  },1000);
+}
+
+// NEW QUESTION
+function newQuestion(){
+  const lvl=levels[levelIndex];
+  if(lvl.pool instanceof Array){
+    current=random(lvl.pool);
+  } else if(lvl.name.includes("Big Numbers")){
+    let length=(difficulty==="EASY"?4:difficulty==="MEDIUM"?7:9);
+    current="";
+    for(let i=0;i<length;i++){
+      current+=random(lvl.pool.split(""));
+    }
+  } else {
+    current=random(lvl.pool.split(""));
   }
   document.getElementById("prompt").textContent=current;
   document.getElementById("entry").value="";
   document.getElementById("result").textContent="";
+  updateProgress();
 }
 
-// === TO MORSE ===
+// TO MORSE
 function toMorse(text){ return text.split("").map(c=>c===" "?"/":MORSE[c]).join(" "); }
 
-// === CHECK ANSWER ===
+// CHECK
 function check(){
   const user=document.getElementById("entry").value.trim();
   const correct=toMorse(current);
-  rounds++;
-  if(user===correct){
-    score++;
-    document.getElementById("result").textContent="Correct ✓\n"+correct;
-  } else {
-    document.getElementById("result").textContent="Wrong ✗\n"+correct;
-  }
-  document.getElementById("score").textContent=`Score: ${score}/${rounds}`;
-  setTimeout(newQuestion,1200);
+  if(user===correct){score+=5; document.getElementById("result").textContent="Correct ✓\n"+correct;}
+  else{score-=5; document.getElementById("result").textContent="Wrong ✗\n"+correct;}
+  answered++;
+  updateScore();
+  if(answered>=totalQuestions){
+    finishLevel();
+  } else setTimeout(newQuestion,800);
 }
 
-// === MODE / DIFFICULTY ===
-function setMode(m){ mode=m; newQuestion(); }
-function setDifficulty(d){ difficulty=d; newQuestion(); }
+// UPDATE SCORE
+function updateScore(){
+  document.getElementById("score").textContent=`Score: ${score}`;
+  updateProgress();
+}
 
-// === CHEAT SHEET ===
+// PROGRESS BAR
+function updateProgress(){
+  const fill=document.getElementById("progressFill");
+  fill.style.width=`${(answered/totalQuestions)*100}%`;
+}
+
+// FINISH LEVEL
+function finishLevel(){
+  clearInterval(timerInterval);
+  alert(`Level Complete! Score: ${score} | Time: ${elapsed}s`);
+  // unlock next level if exists
+  if(levelIndex+1<levels.length) levels[levelIndex+1].unlocked=true;
+  document.getElementById("trainer").style.display="none";
+  document.getElementById("levelSelect").style.display="block";
+  buildLevels();
+}
+
+// CHEAT SHEET
 function toggleSheet(){
   const sheet=document.getElementById("sheet");
-  if(sheet.innerHTML===""){
-    sheet.innerHTML=Object.keys(MORSE).sort().map(k=>`${k} : ${MORSE[k]}`).join("<br>");
-  }
-  sheet.style.display = sheet.style.display==="none"?"block":"none";
+  if(sheet.innerHTML==="") sheet.innerHTML=Object.keys(MORSE).sort().map(k=>`${k} : ${MORSE[k]}`).join("<br>");
+  sheet.style.display=sheet.style.display==="none"?"block":"none";
 }
 </script>
+
 </body>
 </html>
